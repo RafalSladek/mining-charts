@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <!--Script Reference[1]-->
+    <script src="https://momentjs.com/downloads/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js" integrity="sha256-c0m8xzX5oOBawsnLVpHnU2ieISOvxi584aNElFl2W6M="
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <!--Chart Placement[2]-->
+    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+        <canvas id="myChart"> </canvas>
+    </div>
+
+    <script>
+        fetch(
+                'https://supportxmr.com/api/miner/447Yb9jvZscCCrfPSK77bNgpeuyBbq6wELhQLyCcGNatdPqjbit3HucjXqrT3anyZ22j7DEE74GkbVcQFyH2nNiC3gjrwNR/payments', {
+                    credentials: 'same-origin'
+                })
+            .then(function (response) {
+                if (!response.ok) return new Error(response);
+
+                return response.json();
+
+            })
+            .then(function (jsonData) {
+
+                sortedPayments = jsonData.sort(function (a, b) {
+                    return a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0;
+                })
+                return sortedPayments;
+            })
+            .then(function (json) {
+
+                var payments = {
+                    ts: [],
+                    amount: [],
+                    both: []
+                };
+                for (var i = 0; i < json.length; i++) {
+                    var payment = json[i];
+                    var ts = payment.ts * 1000;
+                    var amount = parseFloat(payment.amount / 1000000000000).toFixed(5);
+                    payments.amount[i] = amount;
+                    payments.ts[i] = new Date(ts);
+                    payments.both[i] = {
+                        t: new Date(ts),
+                        y: amount
+                    }
+                }
+                return payments;
+            })
+            .then(function (series) {
+                var ctx = document.getElementById("myChart").getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        //labels: series.ts,
+                        datasets: [{
+                            label: 'Payments',
+                            data: series.both,
+                            //backgroundColor: 'rgb(255, 99, 132)',
+                            borderColor: 'rgb(255, 99, 132)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                }
+                            }],
+                            xAxes: [{
+                                type: 'time',
+                                distribution: 'linear',
+                                time: {
+                                    displayFormats: {
+                                        quarter: 'HH:mm DD MM'
+                                    }
+                                }
+                            }]
+                        },
+
+                        title: {
+                            display: true,
+                            text: 'SupportXMR mine payments'
+                        },
+
+                    }
+                });
+            }).catch(function (err) {
+                console.log(err);
+            });
+    </script>
+
+</body>
+
+</html>
