@@ -22,12 +22,10 @@
                 })
             .then(function (response) {
                 if (!response.ok) return new Error(response);
-
                 return response.json();
 
             })
             .then(function (jsonData) {
-
                 sortedPayments = jsonData.sort(function (a, b) {
                     return a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0;
                 })
@@ -36,6 +34,7 @@
             .then(function (json) {
 
                 var payments = {
+                    total: 0.0,
                     ts: [],
                     amount: [],
                     both: []
@@ -46,6 +45,7 @@
                     var amount = parseFloat(payment.amount / 1000000000000).toFixed(5);
                     payments.amount[i] = amount;
                     payments.ts[i] = new Date(ts);
+                    payments.total += parseFloat(payment.amount / 1000000000000);
                     payments.both[i] = {
                         t: new Date(ts),
                         y: amount
@@ -60,10 +60,11 @@
                     data: {
                         //labels: series.ts,
                         datasets: [{
-                            label: 'Payments',
+                            label: series.total.toFixed(4) + ' XMR ' +
+                                '447Yb9jvZscCCrfPSK77bNgpeuyBbq6wELhQLyCcGNatdPqjbit3HucjXqrT3anyZ22j7DEE74GkbVcQFyH2nNiC3gjrwNR',
                             data: series.both,
                             //backgroundColor: 'rgb(255, 99, 132)',
-                            borderColor: 'rgb(255, 99, 132)',
+                            //borderColor: 'rgb(255, 99, 132)',
                             borderWidth: 1
                         }]
                     },
